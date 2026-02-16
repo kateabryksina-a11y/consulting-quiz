@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Best Consulting Practices</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 8px;
+            margin-top: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-card {
+            display: none;
+        }
+
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option label {
+            cursor: pointer;
+            font-size: 16px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .option.correct {
+            border-color: #48bb78;
+            background: #f0fff4;
+            animation: correctPulse 0.5s ease;
+        }
+
+        .option.incorrect {
+            border-color: #f56565;
+            background: #fff5f5;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            color: #22543d;
+        }
+
+        .feedback.incorrect {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            color: #742a2a;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-text {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .results h2 {
+            font-size: 32px;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            font-size: 64px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+
+        .results-message {
+            font-size: 20px;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .icon {
+            font-size: 24px;
+        }
+
+        .welcome-screen {
+            padding: 40px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 50px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-admin {
+            background: transparent;
+            color: #667eea;
+            padding: 12px 30px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-admin:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        #userName:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .admin-header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .btn-close {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .admin-content {
+            background: white;
+            max-width: 1200px;
+            margin: 40px auto;
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-export, .btn-clear {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export {
+            background: #48bb78;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-export:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-clear {
+            background: #f56565;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-clear:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
+
+        .results-table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .results-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .results-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .score-excellent {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .score-good {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .score-average {
+            background: #feebc8;
+            color: #744210;
+        }
+
+        .score-poor {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .user-name-display {
+            font-size: 24px;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Best Consulting Practices</h1>
+            <p>Тест на знание методологий процессного улучшения</p>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="welcome-screen" id="welcomeScreen">
+            <div style="text-align: center; padding: 60px 40px;">
+                <div style="font-size: 80px; margin-bottom: 20px;">🎯</div>
+                <h2 style="font-size: 32px; color: #2d3748; margin-bottom: 15px;">Добро пожаловать!</h2>
+                <p style="font-size: 18px; color: #4a5568; margin-bottom: 40px;">
+                    Перед началом теста, пожалуйста, представьтесь
+                </p>
+                <div style="max-width: 400px; margin: 0 auto;">
+                    <input type="text" id="userName" placeholder="Введите ваше имя" 
+                           style="width: 100%; padding: 15px 20px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 10px; margin-bottom: 25px; outline: none; transition: all 0.3s ease;"
+                           onkeypress="if(event.key === 'Enter') startQuiz()">
+                    <button class="btn-start" onclick="startQuiz()">
+                        Начать тест
+                    </button>
+                    <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
+                        <button class="btn-admin" onclick="showAdminPanel()">
+                            🔐 Админ панель
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-content" id="quizContent" style="display: none;">
+            <!-- Questions will be inserted here -->
+        </div>
+
+        <div class="results" id="results">
+            <h2>🎉 Тест завершен!</h2>
+            <div class="user-name-display" id="userNameDisplay"></div>
+            <div class="score" id="finalScore"></div>
+            <div class="results-message" id="resultsMessage"></div>
+            <button class="btn-restart" onclick="restartQuiz()">Пройти снова</button>
+        </div>
+
+        <div class="admin-panel" id="adminPanel">
+            <div class="admin-header">
+                <h2>🔐 Панель администратора</h2>
+                <button class="btn-close" onclick="closeAdminPanel()">✕</button>
+            </div>
+            <div class="admin-content">
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAttempts">0</div>
+                        <div class="stat-label">Всего попыток</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avgScore">0%</div>
+                        <div class="stat-label">Средний результат</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="uniqueUsers">0</div>
+                        <div class="stat-label">Уникальных пользователей</div>
+                    </div>
+                </div>
+                <div class="admin-controls">
+                    <button class="btn-export" onclick="exportResults()">📥 Экспорт результатов</button>
+                    <button class="btn-clear" onclick="clearResults()">🗑️ Очистить данные</button>
+                </div>
+                <div class="results-table-container">
+                    <table class="results-table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Имя</th>
+                                <th>Результат</th>
+                                <th>Процент</th>
+                                <th>Дата и время</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Какие методологии рекомендуются для процесса категории A (процесс соответствует гигиене, метрики зеленые)?",
+                options: [
+                    "Checklist / Lean",
+                    "BPR / Six Sigma",
+                    "Six Sigma / Lean",
+                    "Только Kaizen"
+                ],
+                correct: 1,
+                explanation: {
+                    correct: "Отлично! 🎯 Для категории A (процесс с хорошей гигиеной и зелеными метриками) рекомендуются BPR (Business Process Reengineering) или Six Sigma для дальнейшего улучшения и оптимизации.",
+                    incorrect: "Согласно документу, для категории A (MET + GREEN) правильный ответ — BPR / Six Sigma. Это процессы с хорошими показателями, которые готовы к серьезным улучшениям."
+                }
+            },
+            {
+                question: "Что необходимо проверить для подтверждения соблюдения факторов процессной гигиены (Process Hygiene)?",
+                options: [
+                    "Только уровень атрибуции сотрудников",
+                    "Все три фактора: соблюдение политик/процедур, соблюдение графика работы и контроль текучести кадров",
+                    "Только соблюдение политик и процедур",
+                    "Финансовые показатели процесса"
+                ],
+                correct: 1,
+                explanation: {
+                    correct: "Совершенно верно! 👏 Для подтверждения процессной гигиены все три вопроса должны иметь ответ 'Да': соблюдение политик без постоянного мониторинга, соблюдение графиков работы и контроль текучести кадров.",
+                    incorrect: "Документ требует, чтобы ВСЕ три фактора были на месте: (1) соблюдение политик и процедур без обширного мониторинга, (2) соблюдение графика входа/выхода, перерывов и встреч, (3) контроль текучести кадров (атрибуции)."
+                }
+            },
+            {
+                question: "Какой метод улучшения применяется для категории C (процессная гигиена НЕ соблюдена, метрики красные)?",
+                options: [
+                    "BPR / Six Sigma",
+                    "Six Sigma / Lean",
+                    "Checklist / Lean",
+                    "Только BPR"
+                ],
+                correct: 2,
+                explanation: {
+                    correct: "Правильно! ✅ Категория C (NOT MET + RED) требует базового подхода — Checklist / Lean, так как сначала нужно навести порядок в процессе, прежде чем применять более сложные методологии.",
+                    incorrect: "Для категории C (процессная гигиена не соблюдена + красные метрики) нужен базовый подход — Checklist / Lean. Сначала необходимо исправить фундаментальные проблемы процесса."
+                }
+            },
+            {
+                question: "Процесс соответствует требованиям гигиены (MET), но метрики показывают желтый/красный уровень (AMBER/RED). Какая методология рекомендуется?",
+                options: [
+                    "BPR / Six Sigma",
+                    "Six Sigma / Lean",
+                    "Checklist / Lean",
+                    "Только Kaizen"
+                ],
+                correct: 1,
+                explanation: {
+                    correct: "Превосходно! 🌟 Категория B (MET + AMBER/RED) — это процессы с хорошей дисциплиной, но проблемными результатами. Six Sigma / Lean идеально подходят для устранения вариаций и оптимизации.",
+                    incorrect: "Это категория B (MET + AMBER/RED). Процесс дисциплинирован, но результаты неудовлетворительны. Правильный выбор — Six Sigma / Lean для снижения вариаций и улучшения показателей."
+                }
+            },
+            {
+                question: "Что означает, если ответ на вопрос 'Соблюдаются ли политики и процедуры без обширного мониторинга?' — 'Нет'?",
+                options: [
+                    "Процесс автоматически попадает в категорию A",
+                    "Процессная гигиена НЕ соблюдена (NOT MET)",
+                    "Нужно немедленно внедрять Six Sigma",
+                    "Это не влияет на выбор методологии"
+                ],
+                correct: 1,
+                explanation: {
+                    correct: "Точно! 💯 Если хотя бы один из трех факторов гигиены не соблюдается (ответ 'Нет'), процессная гигиена считается НЕ СОБЛЮДЕННОЙ (NOT MET), что переводит процесс в категорию C.",
+                    incorrect: "Для соблюдения процессной гигиены ВСЕ три ответа должны быть 'Да'. Если хотя бы один — 'Нет', гигиена НЕ СОБЛЮДЕНА (NOT MET), и процесс попадает в категорию C."
+                }
+            },
+            {
+                question: "В какой последовательности следует оценивать процесс согласно документу?",
+                options: [
+                    "Сначала метрики, потом процессная гигиена",
+                    "Только метрики процесса",
+                    "Сначала процессная гигиена, потом метрики",
+                    "Последовательность не важна"
+                ],
+                correct: 2,
+                explanation: {
+                    correct: "Отлично запомнили! 📋 Документ четко указывает последовательность: сначала определить, соблюдена ли процессная гигиена (A, B или C), затем оценить цвет метрик (RED, AMBER, GREEN).",
+                    incorrect: "Правильная последовательность: сначала проверить процессную гигиену (все три фактора), затем оценить статус ключевых метрик процесса (Red, Amber или Green)."
+                }
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+        let userName = '';
+
+        // Load results from localStorage
+        function loadResults() {
+            const stored = localStorage.getItem('quizResults');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // Save results to localStorage
+        function saveResult(result) {
+            const results = loadResults();
+            results.push(result);
+            localStorage.setItem('quizResults', JSON.stringify(results));
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('userName');
+            userName = nameInput.value.trim();
+            
+            if (!userName) {
+                nameInput.style.borderColor = '#f56565';
+                nameInput.focus();
+                alert('Пожалуйста, введите ваше имя');
+                return;
+            }
+            
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('quizContent').style.display = 'block';
+            document.getElementById('progressBar').style.display = 'block';
+            
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            
+            initQuiz();
+        }
+
+        function initQuiz() {
+            renderQuestion();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const quizContent = document.getElementById('quizContent');
+            const q = questions[currentQuestion];
+            
+            quizContent.innerHTML = `
+                <div class="question-card active">
+                    <div class="question-number">Вопрос ${currentQuestion + 1} из ${questions.length}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((option, index) => `
+                            <div class="option" onclick="selectOption(${index})">
+                                <label>
+                                    <input type="radio" name="answer" value="${index}" id="option${index}">
+                                    <span>${option}</span>
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback"></div>
+                    <div class="buttons">
+                        <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>
+                            ${currentQuestion === questions.length - 1 ? 'Завершить тест' : 'Следующий вопрос →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            answered = false;
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+            
+            const options = document.querySelectorAll('.option');
+            const radio = document.getElementById(`option${index}`);
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            const q = questions[currentQuestion];
+            
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            radio.checked = true;
+            options[index].classList.add('selected');
+            
+            answered = true;
+            const isCorrect = index === q.correct;
+            
+            if (isCorrect) {
+                score++;
+                options[index].classList.add('correct');
+                feedback.className = 'feedback correct show';
+                feedback.innerHTML = `
+                    <div class="feedback-title">
+                        <span class="icon">✅</span>
+                        Правильно!
+                    </div>
+                    <div class="feedback-text">${q.explanation.correct}</div>
+                `;
+            } else {
+                options[index].classList.add('incorrect');
+                options[q.correct].classList.add('correct');
+                feedback.className = 'feedback incorrect show';
+                feedback.innerHTML = `
+                    <div class="feedback-title">
+                        <span class="icon">❌</span>
+                        Неправильно
+                    </div>
+                    <div class="feedback-text">${q.explanation.incorrect}</div>
+                `;
+            }
+            
+            nextBtn.disabled = false;
+            
+            options.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+        }
+
+        function nextQuestion() {
+            if (!answered) {
+                alert('Пожалуйста, выберите ответ перед продолжением!');
+                return;
+            }
+            
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                renderQuestion();
+                updateProgress();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quizContent').style.display = 'none';
+            document.getElementById('results').classList.add('show');
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            document.getElementById('userNameDisplay').textContent = userName;
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+            
+            let message = '';
+            if (percentage === 100) {
+                message = '🏆 Превосходно! Вы отлично знаете методологии процессного улучшения!';
+            } else if (percentage >= 80) {
+                message = '🎯 Отличный результат! У вас глубокое понимание материала.';
+            } else if (percentage >= 60) {
+                message = '👍 Хороший результат! Рекомендуем повторить некоторые концепции.';
+            } else {
+                message = '📚 Есть к чему стремиться! Повторите материал и попробуйте снова.';
+            }
+            
+            document.getElementById('resultsMessage').textContent = message;
+            updateProgress();
+            
+            // Save result
+            const result = {
+                name: userName,
+                score: score,
+                total: questions.length,
+                percentage: percentage,
+                timestamp: new Date().toISOString()
+            };
+            saveResult(result);
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            userName = '';
+            
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('quizContent').style.display = 'none';
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('userName').value = '';
+        }
+
+        function showAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.add('show');
+            loadAdminData();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.remove('show');
+        }
+
+        function loadAdminData() {
+            const results = loadResults();
+            
+            // Calculate statistics
+            const totalAttempts = results.length;
+            const avgScore = totalAttempts > 0 
+                ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalAttempts) 
+                : 0;
+            const uniqueUsers = new Set(results.map(r => r.name)).size;
+            
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            document.getElementById('uniqueUsers').textContent = uniqueUsers;
+            
+            // Populate table
+            const tbody = document.getElementById('resultsTableBody');
+            
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <div>Результатов пока нет</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = results.reverse().map((result, index) => {
+                const date = new Date(result.timestamp);
+                const formattedDate = date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                let scoreClass = 'score-poor';
+                if (result.percentage === 100) scoreClass = 'score-excellent';
+                else if (result.percentage >= 80) scoreClass = 'score-good';
+                else if (result.percentage >= 60) scoreClass = 'score-average';
+                
+                return `
+                    <tr>
+                        <td>${results.length - index}</td>
+                        <td><strong>${result.name}</strong></td>
+                        <td>${result.score}/${result.total}</td>
+                        <td><span class="score-badge ${scoreClass}">${result.percentage}%</span></td>
+                        <td>${formattedDate}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportResults() {
+            const results = loadResults();
+            
+            if (results.length === 0) {
+                alert('Нет данных для экспорта');
+                return;
+            }
+            
+            // Create CSV
+            const headers = ['№', 'Имя', 'Результат', 'Процент', 'Дата и время'];
+            const rows = results.map((result, index) => {
+                const date = new Date(result.timestamp).toLocaleString('ru-RU');
+                return [
+                    index + 1,
+                    result.name,
+                    `${result.score}/${result.total}`,
+                    `${result.percentage}%`,
+                    date
+                ];
+            });
+            
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            // Download
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `quiz_results_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearResults() {
+            if (confirm('Вы уверены, что хотите удалить все результаты? Это действие нельзя отменить.')) {
+                localStorage.removeItem('quizResults');
+                loadAdminData();
+                alert('Все результаты успешно удалены');
+            }
+        }
+
+        // Close admin panel on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAdminPanel();
+            }
+        });
+    </script>
+</body>
+</html>
